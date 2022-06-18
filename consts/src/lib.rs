@@ -1,3 +1,5 @@
+use log::Level;
+use log::LevelFilter;
 use std::time::Duration;
 
 pub const LEETCODE_ALGORITHMS_URL: &str = "https://leetcode.com/api/problems/algorithms/";
@@ -14,8 +16,8 @@ pub const GOOGLE_SRC: &str = "google/src/";
 // pub const HACKERRANK_SRC: &str = "rustgym/src/hackerrank";
 // pub const HACKERRANK_DESC: &str = "rustgym/desc/hackerrank";
 
-pub const DATABASE_URL: &str = "rustgym.sqlite";
-pub const OPENVGDB_URL: &str = "openvgdb.sqlite";
+pub const DATABASE_URL: &str = "./data/sqlite/rustgym.sqlite";
+pub const OPENVGDB_URL: &str = "./data/sqlite/openvgdb.sqlite";
 pub const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 pub const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 pub const SONIC_URL: &str = "localhost:1491";
@@ -29,3 +31,6 @@ pub const TIME_SLICE: i32 = 100;
 pub const MIME_TYPE: &str = "video/webm;codecs=vp9,opus";
 pub const STREAM_DIR: &str = "./stream";
 pub const DATA_DIR: &str = "./data";
+
+pub const LOG_LEVEL: Level = Level::Info;
+pub const LOG_LEVEL_FILTER: LevelFilter = LevelFilter::Info;

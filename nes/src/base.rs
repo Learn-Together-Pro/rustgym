@@ -5,157 +5,151 @@ pub type Data = u32;
 pub type Address = u32;
 pub type Cycle = u32;
 
-#[derive(Debug)]
-pub enum NesError {
-    /**
-     * NTSC/PAL region mismatch.
-     */
-    WRONG_MODE,
-    /**
-     * Missing FDS BIOS.
-     */
-    MISSING_BIOS,
-    /**
-     * Unsupported or malformed mapper.
-     */
-    UNSUPPORTED_MAPPER,
-    /**
-     * Vs DualSystem is unsupported.
-     */
-    UNSUPPORTED_VSSYSTEM,
-    /**
-     * File format version is no longer supported.
-     */
-    UNSUPPORTED_FILE_VERSION,
-    /**
-     * Unsupported operation.
-     */
-    UNSUPPORTED,
-    /**
-     * Invalid CRC checksum.
-     */
-    INVALID_CRC,
-    /**
-     * Corrupt file.
-     */
-    CORRUPT_FILE,
-    /**
-     * Invalid file.
-     */
-    INVALID_FILE,
-    /**
-     * Invalid parameter(s).
-     */
-    INVALID_PARAM,
-    /**
-     * System not ready.
-     */
-    NOT_READY,
-    /**
-     * Out of memory.
-     */
-    OUT_OF_MEMORY,
-    /**
-     * Generic error.
-     */
-    GENERIC,
+#[derive(Debug, Default)]
+pub struct Gamepad {
+    pub id: String,
+    pub index: u32,
+    pub pressed: Vec<bool>,
+    pub touched: Vec<bool>,
+    pub value: Vec<f64>,
+    pub axes: Vec<f64>,
+    pub timestamp: f64,
 }
 
-#[derive(Debug)]
-pub enum NesWarning {
-    /**
-     * Success.
-     */
-    OK,
-    /**
-     * Success but operation had no effect.
-     */
-    NOP,
-    /**
-     * Success but image dump may be bad.
-     */
-    BAD_DUMP,
-    /**
-     * Success but PRG-ROM may be bad.
-     */
-    BAD_PROM,
-    /**
-     * Success but CHR-ROM may be bad.
-     */
-    BAD_CROM,
-    /**
-     * Success but file header may have incorrect data.
-     */
-    BAD_FILE_HEADER,
-    /**
-     * Success but save data has been lost.
-     */
-    SAVEDATA_LOST,
-    /**
-     * Success but data may have been replaced.
-     */
-    DATA_REPLACED,
+#[derive(Clone, Copy, Debug)]
+pub enum MirroringType {
+    None,
+    Horizontal,
+    Vertical,
+    ScreenAOnly,
+    ScreenBOnly,
+    FourScreens,
 }
 
-#[derive(Debug)]
-pub enum Region {
-    NTSC,
-    PAL,
+impl Default for MirroringType {
+    fn default() -> Self {
+        MirroringType::None
+    }
 }
 
-#[derive(Debug)]
-pub enum System {
-    NTSC,
-    PAL,
-    PAL_A,
-    PAL_B,
-    FAMICOM,
-    DENDY,
-    VS_UNISYSTEM,
-    VS_DUALSYSTEM,
-    PLAYCHOICE_10,
+#[derive(PartialEq, Eq)]
+pub enum NesModel {
+    Auto,
+    Ntsc,
+    Pal,
+    Dendy,
 }
 
-#[derive(Debug)]
-pub enum FavoredSystem {
-    NTSC,
-    PAL,
-    FAMICOM,
-    DENDY,
+impl Default for NesModel {
+    fn default() -> Self {
+        NesModel::Ntsc
+    }
 }
 
-#[derive(Debug)]
-pub enum CpuModel {
-    RP2A03,
-    RP2A07,
-    DENDY,
+pub enum Event {
+    Reset,
+    Nmi,
+    Irq,
+    StartFrame,
+    EndFrame,
+    CodeBreak,
+    StateLoaded,
+    StateSaved,
+    InputPolled,
+    SpriteZeroHit,
+    ScriptEnded,
+    BusConflict,
 }
 
-#[derive(Debug)]
-pub enum PpuModel {
-    RP2C02,
-    RP2C03B,
-    RP2C03G,
-    RP2C04_0001,
-    RP2C04_0002,
-    RP2C04_0003,
-    RP2C04_0004,
-    RC2C03B,
-    RC2C03C,
-    RC2C05_01,
-    RC2C05_02,
-    RC2C05_03,
-    RC2C05_04,
-    RC2C05_05,
-    RP2C07,
-    DENDY,
+pub enum DebugEvent {
+    None,
+    PpuRegisterWrite,
+    PpuRegisterRead,
+    MapperRegisterWrite,
+    MapperRegisterRead,
+    ApuRegisterWrite,
+    ApuRegisterRead,
+    ControlRegisterWrite,
+    ControlRegisterRead,
+    Nmi,
+    Irq,
+    SpriteZeroHit,
+    Breakpoint,
+    DmcDmaRead,
+    BgColorChange,
 }
 
-#[derive(Debug)]
-pub enum Mirroring {
-    HORIZONTAL,
-    VERTICAL,
-    FOURSCREEN,
+pub enum BreakSource {
+    Unspecified,
+    Breakpoint,
+    CpuStep,
+    PpuStep,
+    BreakOnBrk,
+    BreakOnUnofficialOpCode,
+    BreakOnReset,
+    BreakOnFocus,
+    BreakOnUninitMemoryRead,
+    BreakOnDecayedOamRead,
+    BreakOnCpuCrash,
+    Pause,
+    BreakAfterSuspend,
+    BreakOnPpu2006ScrollGlitch,
+    BreakOnBusConflict,
+}
+
+impl Default for BreakSource {
+    fn default() -> Self {
+        BreakSource::Unspecified
+    }
+}
+
+pub enum CpuAddressType {
+    InternalRam,
+    PrgRom,
+    WorkRam,
+    SaveRam,
+    Register,
+}
+
+pub enum PpuAddressType {
+    None,
+    ChrRom,
+    ChrRam,
+    PaletteRam,
+    NametableRam,
+}
+
+pub struct CpuAddressInfo {
+    address: i32,
+    address_type: CpuAddressType,
+}
+
+pub struct PpuAddressInfo {
+    address: i32,
+    address_type: PpuAddressType,
+}
+
+pub enum EvalResultType {
+    Numeric,
+    Boolean,
+    Invalid,
+    DivideBy0,
+    OutOfScope,
+}
+
+pub enum DebugMemoryType {
+    CpuMemory,
+    PpuMemory,
+    PaletteMemory,
+    SpriteMemory,
+    SecondarySpriteMemory,
+    PrgRom,
+    ChrRom,
+    ChrRam,
+    WorkRam,
+    SaveRam,
+    InternalRam,
+    NametableRam,
 }
 
 pub const CLK_M2_MUL: u32 = 6;
@@ -224,29 +218,6 @@ pub const PPU_DENDY_HVSYNC: u32 = PPU_DENDY_VSYNC * PPU_DENDY_HSYNC;
 pub const PPU_DENDY_FPS: u32 =
     (CLK_PAL + CLK_PAL_DIV * PPU_DENDY_HVSYNC / 2) / (CLK_PAL_DIV * PPU_DENDY_HVSYNC);
 
-pub const SIZE_1K: usize = 0x400;
-pub const SIZE_2K: usize = 0x800;
-pub const SIZE_4K: usize = 0x1000;
-pub const SIZE_5K: usize = 0x1400;
-pub const SIZE_6K: usize = 0x1800;
-pub const SIZE_8K: usize = 0x2000;
-pub const SIZE_16K: usize = 0x4000;
-pub const SIZE_32K: usize = 0x8000;
-pub const SIZE_40K: usize = 0xA000;
-pub const SIZE_64K: usize = 0x10000;
-pub const SIZE_128K: usize = 0x20000;
-pub const SIZE_256K: usize = 0x40000;
-pub const SIZE_512K: usize = 0x80000;
-pub const SIZE_1024K: usize = 0x100000;
-pub const SIZE_2048K: usize = 0x200000;
-pub const SIZE_3072K: usize = 0x300000;
-pub const SIZE_4096K: usize = 0x400000;
-pub const SIZE_8192K: usize = 0x800000;
-pub const SIZE_16384K: usize = 0x1000000;
-
-pub const NMI_VECTOR: u16 = 0xFFFA;
-pub const RESET_VECTOR: u16 = 0xFFFC;
-pub const IRQ_VECTOR: u16 = 0xFFFE;
 pub const RESET_CYCLES: u32 = 7;
 pub const INT_CYCLES: u32 = 7;
 pub const BRK_CYCLES: u32 = 7;
@@ -259,3 +230,33 @@ pub const PLP_CYCLES: u32 = 4;
 pub const JSR_CYCLES: u32 = 6;
 pub const JMP_ABS_CYCLES: u32 = 3;
 pub const JMP_IND_CYCLES: u32 = 5;
+
+pub const RAM_SIZE: usize = 0x10000;
+pub const VRAM_SIZE: usize = 0x4000;
+pub const INTERNAL_RAM_SIZE: usize = 0x800;
+
+pub const NAMETABLE_COUNT: usize = 0x10;
+pub const NAMETABLE_SIZE: usize = 0x400;
+pub const NMI_VECTOR: u16 = 0xFFFA;
+pub const RESET_VECTOR: u16 = 0xFFFC;
+pub const IRQ_VECTOR: u16 = 0xFFFE;
+pub const CLOCK_RATE_NTSC: u32 = 1789773;
+pub const CLOCK_RATE_PAL: u32 = 1662607;
+pub const CLOCK_RATE_DENDY: u32 = 1773448;
+pub const PPU_DIVIDER: u64 = 4;
+pub const CPU_DIVIDER: u64 = 12;
+
+pub const SCREEN_WIDTH: usize = 256;
+pub const SCREEN_HEIGHT: usize = 240;
+pub const PIXEL_COUNT: usize = 256 * 240;
+pub const OUTPUT_BUFFER_SIZE: usize = 256 * 240 * 2;
+pub const OAM_DECAY_CYCLE_COUNT: usize = 3000;
+
+pub const PALETTE_RAM_BOOT_VALUES: &[u8] = &[
+    0x09, 0x01, 0x00, 0x01, 0x00, 0x02, 0x02, 0x0D, 0x08, 0x10, 0x08, 0x24, 0x00, 0x00, 0x04, 0x2C,
+    0x09, 0x01, 0x34, 0x03, 0x00, 0x04, 0x00, 0x14, 0x08, 0x3A, 0x00, 0x02, 0x00, 0x20, 0x2C, 0x08,
+];
+
+// pub const DONKEY_KONG: &[u8] = include_bytes!("../../data/nes/Donkey Kong (World) (Rev A).nes");
+// pub const SUPER_MARIO: &[u8] = include_bytes!("../../data/nes/Super Mario Bros (E).nes");
+pub const NES_TEST: &[u8] = include_bytes!("../test/nestest.nes");
